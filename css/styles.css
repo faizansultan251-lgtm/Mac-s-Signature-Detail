@@ -1200,15 +1200,47 @@ a {
     .package-card.featured:hover { transform: translateY(-10px); }
 }
 @media (max-width: 768px) {
-    .nav-links { display: none; } /* Simplified for mobile */
-    .hero-brand-name { font-size: 3rem; }
-    .hero-subheadline { font-size: 1.1rem; }
-    .hero-ctas { flex-direction: column; }
-    .section-title { font-size: 2.2rem; }
+    .nav-links { display: none; }
+
+    /* Hero fixes for mobile */
+    .hero-section {
+        background-attachment: scroll !important; /* fixes iOS blank bg */
+        min-height: 100svh;
+        padding-top: 80px;
+    }
+    .hero-brand-name {
+        font-size: 2.4rem;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+    }
+    .hero-subheadline { font-size: 1rem; padding: 0 5px; }
+    .hero-ctas { flex-direction: column; gap: 10px; }
+    .hero-content { margin-top: 30px; }
+    .section-title { font-size: 1.8rem; }
+
     .chatbot-window {
         width: 300px;
         right: -10px;
     }
+
+    /* Compact package cards */
+    .services-section { padding: 60px 4% !important; }
+    .packages-grid {
+        grid-template-columns: 1fr !important;
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+    .package-card {
+        padding: 22px 18px;
+        border-radius: 12px;
+    }
+    .package-card h3 { font-size: 1.3rem; margin-bottom: 3px; }
+    .package-card .price { font-size: 0.9rem; margin-bottom: 10px; }
+    .package-card .features { margin-bottom: 12px; }
+    .package-card .features li { padding: 3px 0; font-size: 0.88rem; }
+    .package-card.featured { transform: scale(1); }
+    .package-card.featured:hover { transform: translateY(-5px); }
+    .featured-badge { top: -10px; font-size: 0.7rem; padding: 3px 12px; }
 
     /* Calculator mobile */
     .quote-calculator-container {
@@ -1222,37 +1254,28 @@ a {
         padding: 14px 10px;
         font-size: 0.85rem;
     }
-    .calc-option svg {
-        width: 28px;
-        height: 28px;
-    }
-    .calc-option h4 {
-        font-size: 0.85rem;
-    }
-    .calc-step h3 {
-        font-size: 1.1rem;
-    }
+    .calc-option svg { width: 28px; height: 28px; }
+    .calc-option h4 { font-size: 0.85rem; }
+    .calc-step h3 { font-size: 1.1rem; }
     .calc-summary {
         flex-direction: column;
         gap: 15px;
         text-align: center;
         padding: 15px;
     }
-    .summary-total {
-        font-size: 2rem;
-    }
-    .summary-details p {
-        font-size: 0.8rem;
-    }
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    .packages-grid {
-        grid-template-columns: 1fr !important;
-    }
+    .summary-total { font-size: 2rem; }
+    .summary-details p { font-size: 0.8rem; }
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Book CTA button mobile */
+    .btn-book-cta { padding: 15px 30px; font-size: 1.1rem; }
 }
 
 @media (max-width: 420px) {
+    .hero-brand-name { font-size: 2rem; }
+    .hero-content { margin-top: 20px; }
+    .section-title { font-size: 1.5rem; }
+
     .calc-options-grid {
         grid-template-columns: 1fr;
     }
@@ -1271,6 +1294,9 @@ a {
         font-size: 0.75rem;
         padding: 5px 10px;
     }
+
+    .package-card { padding: 18px 14px; }
+    .package-card h3 { font-size: 1.15rem; }
 }
 
 

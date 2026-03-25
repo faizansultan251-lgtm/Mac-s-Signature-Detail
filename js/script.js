@@ -280,7 +280,7 @@ const vehicleLabels = {
 
 let calcState = {
     vehicle: { key: '', label: '' },
-    service: { key: '', label: '', price: 0 },
+    services: [], // Array of { key, label, price }
     addons: []
 };
 
@@ -309,13 +309,18 @@ function selectVehicle(el) {
     // Update service prices based on vehicle
     updateServicePrices();
     
-    // If a service was already selected, re-select it to update price
-    if (calcState.service.key) {
-        const activeService = document.querySelector(`[data-key="${calcState.service.key}"][data-group="service"]`);
-        if (activeService) {
-            selectService(activeService, true);
+    // Update prices for all currently selected services
+    const updatedServices = [];
+    calcState.services.forEach(svc => {
+        const newPrice = pricingMatrix[svc.key][key];
+        if (newPrice !== null) {
+            updatedServices.push({ key: svc.key, label: svc.label, price: newPrice });
+        } else {
+            const el = document.querySelector(`[data-key="${svc.key}"][data-group="service"]`);
+            if (el) el.classList.remove('selected');
         }
-    }
+    });
+    calcState.services = updatedServices;
     
     updateCalcSummary();
     
@@ -352,7 +357,6 @@ function selectService(el, skipScroll) {
     const vehicleKey = calcState.vehicle.key;
     
     if (!vehicleKey) {
-        // Scroll back to step 1 instead of alert
         scrollToStep('step-1');
         return;
     }
@@ -360,17 +364,18 @@ function selectService(el, skipScroll) {
     const price = pricingMatrix[key][vehicleKey];
     if (price === null) return;
     
-    const siblings = el.parentElement.querySelectorAll('.calc-option');
-    siblings.forEach(s => s.classList.remove('selected'));
-    el.classList.add('selected');
-    
-    calcState.service = { key, label: serviceLabels[key], price };
-    updateCalcSummary();
-    
-    // Auto-scroll to step 3 (add-ons)
-    if (!skipScroll) {
-        scrollToStep('step-3');
+    const index = calcState.services.findIndex(s => s.key === key);
+    if (index !== -1) {
+        // Toggle off
+        el.classList.remove('selected');
+        calcState.services.splice(index, 1);
+    } else {
+        // Toggle on
+        el.classList.add('selected');
+        calcState.services.push({ key, label: serviceLabels[key], price });
     }
+    
+    updateCalcSummary();
 }
 
 function toggleAddon(el) {
@@ -421,26 +426,34 @@ function selectOdorSeverity(btn, event) {
 }
 
 function updateCalcSummary() {
-    let servicePrice = calcState.service.price || 0;
+    let servicesTotal = 0;
+    calcState.services.forEach(s => servicesTotal += s.price);
+    
     let addonsTotal = 0;
     calcState.addons.forEach(a => addonsTotal += a.val);
-    let total = servicePrice + addonsTotal;
+    
+    let total = servicesTotal + addonsTotal;
     
     document.getElementById('calc-total').innerText = total;
     
     let breakdown = [];
     if (calcState.vehicle.label) breakdown.push(calcState.vehicle.label);
-    if (calcState.service.label) breakdown.push(calcState.service.label + ' ($' + calcState.service.price + ')');
-    if (calcState.addons.length > 0) {
-        const addonNames = calcState.addons.map(a => a.name + ' (+$' + a.val + ')');
-        breakdown.push(addonNames.join(', '));
+    
+    if (calcState.services.length > 0) {
+        const svcLabels = calcState.services.map(s => s.label);
+        breakdown.push(svcLabels.join(' + '));
     }
     
-    document.getElementById('calc-breakdown').innerText = breakdown.join(' | ') || 'Select vehicle & service above';
+    if (calcState.addons.length > 0) {
+        const addonNames = calcState.addons.map(a => a.name);
+        breakdown.push('Add-ons: ' + addonNames.join(', '));
+    }
+    
+    document.getElementById('calc-breakdown').innerText = breakdown.join(' | ') || 'Select vehicle & services above';
     
     // Show/hide the Book Now actions
     const actionsPanel = document.getElementById('calcBookActions');
-    if (calcState.service.key && calcState.vehicle.key) {
+    if (calcState.services.length > 0 && calcState.vehicle.key) {
         actionsPanel.style.display = 'block';
     } else {
         actionsPanel.style.display = 'none';
@@ -449,7 +462,10 @@ function updateCalcSummary() {
 
 function sendQuoteEmail() {
     const vehicleLabel = calcState.vehicle.label || 'Not selected';
-    const serviceLabel = calcState.service.label || 'Not selected';
+    const servicesText = calcState.services.length > 0
+        ? calcState.services.map(s => '• ' + s.label + ' — $' + s.price).join('\n')
+        : 'None selected';
+        
     const addonsText = calcState.addons.length > 0
         ? calcState.addons.map(a => '• ' + a.name + ' — $' + a.val).join('\n')
         : 'None';
@@ -460,7 +476,7 @@ function sendQuoteEmail() {
         'Hi Mac\'s Signature Auto Care,\n\n' +
         'I\'d like to request a quote for the following:\n\n' +
         '— Vehicle: ' + vehicleLabel + '\n' +
-        '— Service: ' + serviceLabel + '\n' +
+        '— Services:\n' + servicesText + '\n' +
         '— Add-ons:\n' + addonsText + '\n\n' +
         '— Estimated Total: $' + total + '\n\n' +
         'Please let me know availability. Thank you!'

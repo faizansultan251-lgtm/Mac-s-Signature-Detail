@@ -312,23 +312,16 @@ let calcState = {
     addons: []
 };
 
-// Gentle scroll helper — nudges the next step into view without jumping
+// Gentle scroll helper — nudges the next step into view
 function scrollToStep(stepId) {
     setTimeout(() => {
         const target = document.getElementById(stepId);
         if (target) {
             const rect = target.getBoundingClientRect();
-            // Only scroll if the element isn't already mostly visible
-            if (rect.top > window.innerHeight * 0.65) {
-                window.scrollBy({ top: rect.top - window.innerHeight * 0.45, behavior: 'smooth' });
+            if (rect.top > 150) {
+                window.scrollBy({ top: rect.top - 100, behavior: 'smooth' });
             }
         }
-    }, 300);
-}
-
-function slightScrollDown() {
-    setTimeout(() => {
-        window.scrollBy({ top: 180, behavior: 'smooth' });
     }, 150);
 }
 
@@ -359,7 +352,7 @@ function selectVehicle(el) {
     updateCalcSummary();
     
     // Auto-scroll downwards slightly
-    slightScrollDown();
+    scrollToStep('step-2');
 }
 
 function updateServicePrices() {
@@ -407,7 +400,7 @@ function selectService(el, skipScroll) {
         // Toggle on
         el.classList.add('selected');
         calcState.services.push({ key, label: serviceLabels[key], price });
-        slightScrollDown();
+        scrollToStep('step-3');
     }
     
     updateCalcSummary();
@@ -430,7 +423,7 @@ function toggleAddon(el) {
             // Default to light ($20)
             const defaultCost = 20;
             calcState.addons.push({ val: defaultCost, name });
-            slightScrollDown();
+            scrollToStep('calc-summary');
         }
     } else {
         if (el.classList.contains('selected')) {
@@ -439,7 +432,7 @@ function toggleAddon(el) {
         } else {
             el.classList.add('selected');
             calcState.addons.push({ val, name });
-            slightScrollDown();
+            scrollToStep('calc-summary');
         }
     }
     updateCalcSummary();

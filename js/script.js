@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qaDatabase = [
         {
             q: "What services do you offer?",
-            a: "We offer Exterior Detail, Interior Detail, Ceramic Coatings & Polishing, Polishing, Maintenance Details (In/Ex), and Add-On Services like headlight restore, steam cleaning, and odor/stain removal."
+            a: "We offer Exterior Detail, Interior Detail, Full Service (Complete Refresh), Ceramic Coatings & Paint Correction, Paint Correction / Enhancements, and Add-On Services like headlight restore, clay bar and wax, and odor/stain removal."
         },
         {
             q: "How much is an exterior detail?",
@@ -106,11 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             q: "What about ceramic coatings?",
-            a: "Ceramic Coatings & Polishing starts at $750 for Cars, $850 for SUVs, and $950 for Large Trucks/Vans."
-        },
-        {
-            q: "Do you offer maintenance plans?",
-            a: "Yes! Maintenance Details (In/Ex) start at $80 for Coupe/Sedans, $100 for SUV/Pickup Trucks, and $120 for Large Trucks/Vans. We offer weekly, biweekly, and monthly options."
+            a: "Ceramic Coatings & Paint Correction starts at $750 for Cars, $850 for SUVs, and $950 for Large Trucks/Vans."
         },
         {
             q: "How do I book?",
@@ -241,6 +237,11 @@ const pricingMatrix = {
         small_boat: null, medium_boat: null, large_boat: null,
         small_rv: null, medium_rv: null, large_rv: null
     },
+    full_service: {
+        sedan: 120, suv: 160, large: 200, utv: null, swamp_buggy: null,
+        small_boat: null, medium_boat: null, large_boat: null,
+        small_rv: null, medium_rv: null, large_rv: null
+    },
     ceramic: {
         sedan: 750, suv: 850, large: 950, utv: null, swamp_buggy: null,
         small_boat: null, medium_boat: null, large_boat: null,
@@ -281,8 +282,9 @@ const pricingMatrix = {
 const serviceLabels = {
     exterior: 'Exterior Detail',
     interior: 'Interior Detail',
-    ceramic: 'Ceramic Coatings & Polishing',
-    polishing: 'Polishing',
+    full_service: 'Full Service (Complete Refresh)',
+    ceramic: 'Ceramic Coatings & Paint Correction',
+    polishing: 'Paint Correction / Enhancements',
     maintenance: 'Maintenance Detail In/Ex',
     claywax: 'Clay and Wax',
     boat_coating: 'Boat Coating',
@@ -324,6 +326,12 @@ function scrollToStep(stepId) {
     }, 300);
 }
 
+function slightScrollDown() {
+    setTimeout(() => {
+        window.scrollBy({ top: 180, behavior: 'smooth' });
+    }, 150);
+}
+
 function selectVehicle(el) {
     const key = el.getAttribute('data-key');
     const siblings = el.parentElement.querySelectorAll('.calc-option');
@@ -350,15 +358,15 @@ function selectVehicle(el) {
     
     updateCalcSummary();
     
-    // Auto-scroll to step 2
-    scrollToStep('step-2');
+    // Auto-scroll downwards slightly
+    slightScrollDown();
 }
 
 function updateServicePrices() {
     const vehicleKey = calcState.vehicle.key;
     if (!vehicleKey) return;
     
-    const serviceIds = ['exterior', 'interior', 'ceramic', 'polishing', 'maintenance', 'claywax', 'boat_coating', 'offroad_coating', 'rv_coating'];
+    const serviceIds = ['exterior', 'interior', 'full_service', 'ceramic', 'polishing', 'maintenance', 'claywax', 'boat_coating', 'offroad_coating', 'rv_coating'];
     serviceIds.forEach(svc => {
         const priceEl = document.getElementById('price-' + svc);
         const optionEl = document.querySelector(`[data-key="${svc}"][data-group="service"]`);
@@ -399,6 +407,7 @@ function selectService(el, skipScroll) {
         // Toggle on
         el.classList.add('selected');
         calcState.services.push({ key, label: serviceLabels[key], price });
+        slightScrollDown();
     }
     
     updateCalcSummary();
@@ -421,6 +430,7 @@ function toggleAddon(el) {
             // Default to light ($20)
             const defaultCost = 20;
             calcState.addons.push({ val: defaultCost, name });
+            slightScrollDown();
         }
     } else {
         if (el.classList.contains('selected')) {
@@ -429,6 +439,7 @@ function toggleAddon(el) {
         } else {
             el.classList.add('selected');
             calcState.addons.push({ val, name });
+            slightScrollDown();
         }
     }
     updateCalcSummary();
@@ -497,7 +508,6 @@ function sendQuoteEmail() {
         : 'None';
     const total = document.getElementById('calc-total')?.innerText || '0';
     
-    const subject = encodeURIComponent('Quote Request — Mac\'s Signature Auto Care');
     const body = encodeURIComponent(
         'Hi Mac\'s Signature Auto Care,\n\n' +
         'I\'d like to request a quote for the following:\n\n' +
@@ -508,7 +518,30 @@ function sendQuoteEmail() {
         'Please let me know availability. Thank you!'
     );
     
-    window.location.href = 'mailto:macdetailing25@gmail.com?subject=' + subject + '&body=' + body;
+    window.location.href = 'sms:+15617882872?&body=' + body;
+}
+
+// Short Quote Modal Logic
+function openQuoteModal() {
+    document.getElementById('quoteModal').style.display = 'flex';
+}
+
+function closeQuoteModal() {
+    document.getElementById('quoteModal').style.display = 'none';
+}
+
+function submitShortQuote(e) {
+    e.preventDefault();
+    const name = document.getElementById('sqName').value;
+    const phone = document.getElementById('sqPhone').value;
+    const vehicle = document.getElementById('sqVehicle').value;
+    const services = document.getElementById('sqServices').value;
+    const date = document.getElementById('sqDate').value;
+
+    const message = `Fast Quote Request\nName: ${name}\nPhone: ${phone}\nVehicle: ${vehicle}\nServices: ${services}\nDate/Time: ${date}`;
+    
+    window.location.href = `sms:+15617882872?&body=${encodeURIComponent(message)}`;
+    closeQuoteModal();
 }
 
 
@@ -545,4 +578,29 @@ function startCounters() {
     });
 }
 document.addEventListener('DOMContentLoaded', startCounters);
+
+// ===== LIGHTBOX LOGIC =====
+function openLightbox(src) {
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImg');
+    if(modal && img) {
+        modal.style.display = "flex";
+        img.src = src;
+    }
+}
+
+function closeLightbox(e) {
+    if (e.target.id === 'lightboxModal' || e.target.classList.contains('lightbox-close')) {
+        document.getElementById('lightboxModal').style.display = "none";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const galleryItems = document.querySelectorAll('.gallery-item img');
+    galleryItems.forEach(item => {
+        item.addEventListener('click', () => {
+            openLightbox(item.src);
+        });
+    });
+});
 // v2.1 - updated 2026-03-25
